@@ -84,6 +84,8 @@ pub mod pallet {
         PriceSet { kitty: [u8; 16], price: Option<BalanceOf<T>> },
         /// A kitty was successfully sold.
         Sold { seller: T::AccountId, buyer: T::AccountId, kitty: [u8; 16], price: BalanceOf<T> },
+        /// Show kitties owner.
+        ShowKitties {owner: T::AccountId , kitties:  BoundedVec<[u8; 16], T::MaxKittiesOwned>}
     }
 
     // Your Pallet's error messages.
@@ -187,6 +189,18 @@ pub mod pallet {
             let buyer = ensure_signed(origin)?;
             // Transfer the kitty from seller to buyer as a sale.
             Self::do_buy_kitty(kitty_id, buyer, bid_price)?;
+
+            Ok(())
+        }
+
+        #[pallet::weight(0)]
+        pub fn display_kitties_owner(
+            origin: OriginFor<T>
+        ) -> DispatchResult {
+            // Make sure the caller is from a signed origin
+            let owner = ensure_signed(origin)?;
+            // Show 
+            Self::do_display_kitties_owner(owner)?;
 
             Ok(())
         }
@@ -340,5 +354,13 @@ pub mod pallet {
 
             Ok(())
         }
+    
+        pub fn do_display_kitties_owner(owner: T::AccountId) -> DispatchResult {
+            let _kitties = KittiesOwned::<T>::get(&owner);
+            ensure!(_kitties.len() == 0, Error::<T>::NoKitty);
+            Self::deposit_event(Event::ShowKitties { owner: owner, kitties: _kitties });
+            Ok(())
+        }
     }
+    
 }
